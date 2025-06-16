@@ -2,9 +2,6 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  template: '<app-map></app-map>',
 })
-export class AppComponent {
-  title = 'interactive-map-app';
-}
+export class AppComponent {}
