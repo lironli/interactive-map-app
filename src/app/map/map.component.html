@@ -1,1 +1,9 @@
-<div id="map" style="height: 100vh;"></div>
+<div id="map" class="map-fullscreen"></div>
+
+<div class="overlay drawing-controls">
+  <button (click)="setDrawingMode('marker')">Add Marker</button>
+  <button (click)="setDrawingMode('polygon')">Draw Polygon</button>
+  <button *ngIf="drawingMode === 'polygon'" (click)="finishPolygon()">Finish Polygon</button>
+</div>
+
+

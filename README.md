@@ -7,8 +7,8 @@ This application uses Leaflet to display an interactive map.
 ## Features
 
 - Leaflet map integration using OpenStreetMap tiles.
-- Add points/markers by clicking on the map.
-- Popups showing marker coordinates.
+- Add points/markers by clicking on the map. Popups showing marker coordinates.
+- Draw a polygon on the map by clicking multiple points and complete the shape with a double click or "Finish Polygon" button.
 
 ---
 
