@@ -8,4 +8,10 @@
   <button *ngIf="drawingMode === 'line'" (click)="finishLine()">Finish Line</button>
 </div>
 
+<div class="feature-list">
+  <div class="feature-item" *ngFor="let feature of features" (click)="zoomToFeature(feature)">
+    {{ feature.name }}
+  </div>
+</div>
+
 

@@ -5,6 +5,8 @@ import { DrawingMode } from '../shared/drawing-mode.type';
 import { MarkerService } from '../features/marker/marker.service';
 import { PolygonService } from '../features/polygon/polygon.service';
 import { LineStringService } from '../features/line-string/line-string.service';
+import { FeatureListService } from '../services/feature-list.service';
+import { Feature } from '../shared/feature.model';
 
 // Fixing a potential bug with the leaflet's marker icons loader in some env.
 // importing the markers images into the assets folder
@@ -23,11 +25,13 @@ L.Icon.Default.mergeOptions({
 export class MapComponent implements OnInit {
   map!: L.Map;
   drawingMode: DrawingMode = 'none';
+  features: Feature[] = [];
 
   constructor(
     private markerService: MarkerService,
     private polygonService: PolygonService,
-    private lineService: LineStringService
+    private lineService: LineStringService,
+    private featureListService: FeatureListService
   ) {}
 
   ngOnInit(): void {
@@ -65,6 +69,11 @@ export class MapComponent implements OnInit {
         this.finishLine();
       }
     });
+
+    // Initialize features property.
+    this.featureListService.getFeatures().subscribe(features => {
+      this.features = features;
+    });
   }
 
   setDrawingMode(mode: DrawingMode) {
@@ -85,4 +94,16 @@ export class MapComponent implements OnInit {
     this.lineService.finishLine(this.map);
     this.drawingMode = 'none';
   }
+
+  zoomToFeature(feature: Feature): void {
+    const layer = feature.layer;
+    if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+      const bounds = layer.getBounds();
+      this.map.fitBounds(bounds);
+    } else if (layer instanceof L.Marker) {
+      const latlng = layer.getLatLng();
+      this.map.setView(latlng, 14);
+    }
+  }
+
 }
