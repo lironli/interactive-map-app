@@ -7,8 +7,10 @@ This application uses Leaflet to display an interactive map.
 ## Features
 
 - Leaflet map integration using OpenStreetMap tiles.
+- Buttons to add different feature to the map
 - Add points/markers by clicking on the map. Popups showing marker coordinates.
 - Draw a polygon on the map by clicking multiple points and complete the shape with a double click or "Finish Polygon" button.
+- Draw a line string on the map by clicking multiple points and complete the shape with a double click or "Finish Line" button.
 
 ---
 
@@ -45,5 +47,4 @@ The application will automatically reload if you change any of the source files.
 
 - Angular 16
 - Leaflet 1.9
-- ngx-leaflet wrapper (`@bluehalo/ngx-leaflet`)
 - TypeScript

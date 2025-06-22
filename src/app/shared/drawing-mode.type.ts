@@ -1,1 +1,1 @@
-export type DrawingMode = 'none' | 'marker' | 'polygon';
+export type DrawingMode = 'none' | 'marker' | 'polygon' | 'line';

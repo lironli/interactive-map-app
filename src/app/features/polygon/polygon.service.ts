@@ -9,7 +9,7 @@ export class PolygonService {
   private points: L.LatLng[] = [];
   private polygonLayer: L.Polygon | null = null;
 
-  startPolygon(map: L.Map) {
+  startPolygon(map: L.Map): void{
     this.points = [];
     if (this.polygonLayer) {
       map.removeLayer(this.polygonLayer);
@@ -18,7 +18,7 @@ export class PolygonService {
     map.doubleClickZoom.disable();
   }
 
-  addPoint(map: L.Map, latlng: L.LatLng) {
+  addPoint(map: L.Map, latlng: L.LatLng): void{
     this.points.push(latlng);
     if (this.polygonLayer) {
       map.removeLayer(this.polygonLayer);
@@ -26,11 +26,12 @@ export class PolygonService {
     this.polygonLayer = L.polygon(this.points, { color: 'blue' }).addTo(map);
   }
 
-  finishPolygon(map: L.Map) {
+  finishPolygon(map: L.Map): void{
     if (this.points.length >= 3) {
       this.polygonLayer = L.polygon(this.points, { color: 'blue' }).addTo(map);
     }
     this.points = [];
+    this.polygonLayer = null;
     map.doubleClickZoom.enable();
   }
 }
