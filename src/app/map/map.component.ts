@@ -20,6 +20,10 @@ export class MapComponent implements OnInit {
   hoveredFeatureId: string | null = null;
   selectedFeatureId: string | null = null;
 
+  // will be used to avoid clearing feature selection too early.
+  private userInteracted = false;
+  private suppressNextClear = false;
+
   constructor(
     private markerService: MarkerService,
     private polygonService: PolygonService,
@@ -67,6 +71,21 @@ export class MapComponent implements OnInit {
     this.featureListService.getFeatures().subscribe(features => {
       this.features = features;
     });
+
+    // Listeners for map move/zoom in order to clear feature selection from the list.
+    this.map.on('movestart', () => {
+      if (!this.suppressNextClear) {
+        this.userInteracted = true;
+      }
+    });
+
+    this.map.on('moveend', () => {
+      if (this.userInteracted) {
+        this.clearFeatureSelection();
+        this.userInteracted = false;
+      }
+    });
+
   }
 
   setDrawingMode(mode: DrawingMode) {
@@ -116,12 +135,17 @@ export class MapComponent implements OnInit {
   selectFeature(feature: Feature) {
     this.selectedFeatureId = feature.id;
 
+    this.suppressNextClear = true;
+
     const bounds = (feature.layer as any).getBounds?.();
     if (bounds) {
       this.map.fitBounds(bounds);
     } else if ((feature.layer as any).getLatLng) {
       this.map.setView((feature.layer as any).getLatLng(), 14);
     }
+
+    this.suppressNextClear = false;
+
   }
 
   onHover(featureId: string) {
@@ -150,6 +174,10 @@ export class MapComponent implements OnInit {
     }
 
     this.hoveredFeatureId = null;
+  }
+
+  clearFeatureSelection() {
+    this.selectedFeatureId = null;
   }
 
 
