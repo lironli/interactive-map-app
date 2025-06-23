@@ -36,30 +36,51 @@ button:hover {
   background-color: #1565c0;
 }
 
+button.active {
+  background-color: #004ba0;
+  font-weight: bold;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
 .feature-list {
   position: absolute;
   bottom: 0;
-  width: 100%;
-  max-height: 100px;
+  width: 96%;
   background: rgba(255, 255, 255, 0.9);
   overflow-x: auto;
-  display: flex;
-  gap: 12px;
-  padding: 10px;
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2);
   z-index: 1000;
+
+  max-height: 150px;
+  overflow-y: auto;
+  border-top: 2px solid #ccc;
+  padding: 0.5rem 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+
 }
 
 .feature-item {
-  background: #007bff;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
+  background: #f0f0f0;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.2s;
+  transition: background 0.3s ease;
 }
 
-.feature-item:hover {
-  background: #0056b3;
+.feature-item.hovered,
+.feature-item.hovered:hover {
+  background-color: #e6f0ff !important;
+}
+
+.hovered {
+  background-color: #e6f0ff !important;
+}
+
+.feature-item.selected {
+  background-color: #cce0ff;
+  font-weight: bold;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }

@@ -29,12 +29,12 @@ export class LineStringService {
     if (this.lineLayer) {
       map.removeLayer(this.lineLayer);
     }
-    this.lineLayer = L.polyline(this.linePoints, { color: 'red' }).addTo(map);
+    this.lineLayer = L.polyline(this.linePoints, {color: 'purple'}).addTo(map);
   }
 
   finishLine(map: L.Map): void {
     if (this.linePoints.length >= 2) {
-      this.lineLayer = L.polyline(this.linePoints, { color: 'red' }).addTo(map);
+      this.lineLayer = L.polyline(this.linePoints, {color: 'purple'}).addTo(map);
 
       // Adding this polygon to the feature list
       const id = uuidv4(); // Unique ID for this marker
@@ -51,4 +51,14 @@ export class LineStringService {
     this.lineLayer = null;
     map.doubleClickZoom.enable();
   }
+
+  cancelDrawing(map: L.Map): void {
+    if (this.lineLayer) {
+      map.removeLayer(this.lineLayer);
+      this.lineLayer = null;
+    }
+    this.linePoints = [];
+    map.doubleClickZoom.enable();
+  }
+
 }

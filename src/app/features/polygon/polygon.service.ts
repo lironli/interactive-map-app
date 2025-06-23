@@ -40,7 +40,7 @@ export class PolygonService {
       // Adding this polygon to the feature list
       const id = uuidv4(); // Unique ID for this marker
       const feature: Feature = {
-        id: `polygon-${Date.now()}`,
+        id: id,
         name: `Polygon ${this.featureListService.getFeatureCount() + 1}`,
         layer: this.polygonLayer
       };
@@ -52,4 +52,14 @@ export class PolygonService {
     this.polygonLayer = null;
     map.doubleClickZoom.enable();
   }
+
+  cancelDrawing(map: L.Map): void {
+    if (this.polygonLayer) {
+      map.removeLayer(this.polygonLayer);
+      this.polygonLayer = null;
+    }
+    this.points = [];
+    map.doubleClickZoom.enable();
+  }
+
 }

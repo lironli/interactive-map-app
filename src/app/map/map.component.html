@@ -1,15 +1,23 @@
 <div id="map" class="map-fullscreen"></div>
 
 <div class="overlay drawing-controls">
-  <button (click)="setDrawingMode('marker')">Add Marker</button>
-  <button (click)="setDrawingMode('polygon')">Draw Polygon</button>
+  <button (click)="setDrawingMode('marker')" [ngClass]="{ 'active': drawingMode === 'marker' }">Add Marker</button>
+  <button (click)="setDrawingMode('polygon')" [ngClass]="{ 'active': drawingMode === 'polygon' }">Draw Polygon</button>
   <button *ngIf="drawingMode === 'polygon'" (click)="finishPolygon()">Finish Polygon</button>
-  <button (click)="setDrawingMode('line')">Draw Line String</button>
+  <button (click)="setDrawingMode('line')" [ngClass]="{ 'active': drawingMode === 'line' }">Draw Line String</button>
   <button *ngIf="drawingMode === 'line'" (click)="finishLine()">Finish Line</button>
 </div>
 
 <div class="feature-list">
-  <div class="feature-item" *ngFor="let feature of features" (click)="zoomToFeature(feature)">
+  <div
+    class="feature-item"
+    *ngFor="let feature of features"
+    [class.hovered]="hoveredFeatureId === feature.id"
+    [class.selected]="selectedFeatureId === feature.id"
+    (click)="selectFeature(feature)"
+    (mouseenter)="onHover(feature.id)"
+    (mouseleave)="onLeave()"
+  >
     {{ feature.name }}
   </div>
 </div>
