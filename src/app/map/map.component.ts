@@ -5,15 +5,8 @@ import { DrawingMode } from '../shared/drawing-mode.type';
 import { MarkerService } from '../features/marker/marker.service';
 import { PolygonService } from '../features/polygon/polygon.service';
 import { LineStringService } from '../features/line-string/line-string.service';
-
-// Fixing a potential bug with the leaflet's marker icons loader in some env.
-// importing the markers images into the assets folder
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'assets/marker-icon-2x.png',
-  iconUrl: 'assets/marker-icon.png',
-  shadowUrl: 'assets/marker-shadow.png'
-});
+import { FeatureListService } from '../services/feature-list.service';
+import { Feature } from '../shared/feature.model';
 
 @Component({
   selector: 'app-map',
@@ -23,11 +16,15 @@ L.Icon.Default.mergeOptions({
 export class MapComponent implements OnInit {
   map!: L.Map;
   drawingMode: DrawingMode = 'none';
+  features: Feature[] = [];
+  hoveredFeatureId: string | null = null;
+  selectedFeatureId: string | null = null;
 
   constructor(
     private markerService: MarkerService,
     private polygonService: PolygonService,
-    private lineService: LineStringService
+    private lineService: LineStringService,
+    private featureListService: FeatureListService
   ) {}
 
   ngOnInit(): void {
@@ -65,13 +62,31 @@ export class MapComponent implements OnInit {
         this.finishLine();
       }
     });
+
+    // Initialize features property.
+    this.featureListService.getFeatures().subscribe(features => {
+      this.features = features;
+    });
   }
 
   setDrawingMode(mode: DrawingMode) {
+    if (this.drawingMode === mode) {
+      // If already in this mode, toggle off and clean up
+      if (mode === 'polygon') {
+        this.polygonService.cancelDrawing(this.map);
+      } else if (mode === 'line') {
+        this.lineService.cancelDrawing(this.map);
+      }
+
+      this.drawingMode = 'none';
+      return;
+    }
+
+    // Switch to new mode
     this.drawingMode = mode;
     if (mode === 'polygon') {
       this.polygonService.startPolygon(this.map);
-    } else if (mode === 'line'){
+    } else if (mode === 'line') {
       this.lineService.startLine(this.map);
     }
   }
@@ -85,4 +100,57 @@ export class MapComponent implements OnInit {
     this.lineService.finishLine(this.map);
     this.drawingMode = 'none';
   }
+
+  zoomToFeature(feature: Feature): void {
+    const layer = feature.layer;
+    if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+      const bounds = layer.getBounds();
+      this.map.fitBounds(bounds);
+    } else if (layer instanceof L.Marker) {
+      const latlng = layer.getLatLng();
+      this.map.setView(latlng, 14);
+    }
+  }
+
+  // For highlight when clicked or hovered ---------------------
+  selectFeature(feature: Feature) {
+    this.selectedFeatureId = feature.id;
+
+    const bounds = (feature.layer as any).getBounds?.();
+    if (bounds) {
+      this.map.fitBounds(bounds);
+    } else if ((feature.layer as any).getLatLng) {
+      this.map.setView((feature.layer as any).getLatLng(), 14);
+    }
+  }
+
+  onHover(featureId: string) {
+
+    const feature = this.features.find(f => f.id === featureId);
+    if (!feature) return;
+
+    this.hoveredFeatureId = featureId;
+
+    if ('setStyle' in feature.layer) {
+      (feature.layer as L.Path).setStyle({ color: 'red' });
+    } else if ('setIcon' in feature.layer && feature.hoverIcon) {
+      (feature.layer as L.Marker).setIcon(feature.hoverIcon);
+    }
+
+  }
+
+  onLeave() {
+    const feature = this.features.find(f => f.id === this.hoveredFeatureId);
+    if (!feature) return;
+
+    if ('setStyle' in feature.layer) {
+      (feature.layer as L.Path).setStyle({ color: feature.originalColor});
+    } else if ('setIcon' in feature.layer && feature.defaultIcon) {
+      (feature.layer as L.Marker).setIcon(feature.defaultIcon);
+    }
+
+    this.hoveredFeatureId = null;
+  }
+
+
 }
