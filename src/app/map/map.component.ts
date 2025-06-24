@@ -1,12 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 
+
 import { DrawingMode } from '../shared/drawing-mode.type';
 import { MarkerService } from '../features/marker/marker.service';
 import { PolygonService } from '../features/polygon/polygon.service';
 import { LineStringService } from '../features/line-string/line-string.service';
 import { FeatureListService } from '../services/feature-list.service';
+import { StateService } from '../services/state.service';
 import { Feature } from '../shared/feature.model';
+import { getHoverColor } from '../shared/feature-colors';
+import { getColorForType } from '../shared/feature-colors';
 
 @Component({
   selector: 'app-map',
@@ -28,11 +32,11 @@ export class MapComponent implements OnInit {
     private markerService: MarkerService,
     private polygonService: PolygonService,
     private lineService: LineStringService,
-    private featureListService: FeatureListService
+    private featureListService: FeatureListService,
+    private stateService: StateService
   ) {}
 
   ngOnInit(): void {
-
     // initialize the map on the "map" div with a given center and zoom ([center], zoom)
     this.map = L.map('map').setView([31.264, 34.812], 9);
 
@@ -41,10 +45,25 @@ export class MapComponent implements OnInit {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
+    // Load previously saved features from localStorage
+    const loadedFeatures = this.stateService.loadFeatures(this.map);
+    for (const f of loadedFeatures) {
+      f.layer.addTo(this.map);
+      this.featureListService.addFeature(f);
+    }
+
+    // Subscribe and auto-save on every feature list update
+    this.featureListService.getFeatures().subscribe(features => {
+      this.features = features;
+      this.stateService.saveFeatures(features); // Save to localStorage
+    });
+
+    this.setupMapListeners();
+  }
+
+  setupMapListeners(): void {
     let clickTimeout: any;
-    // Listen for clicks and reacting to the current drawing mode
-    // e.latlng refers to the latitude and longitude coordinates obtained from a map click event
-    // Using click timeout to solve double click not responding issue in polygon mode.
+
     this.map.on('click', (e: L.LeafletMouseEvent) => {
       clearTimeout(clickTimeout);
       clickTimeout = setTimeout(() => {
@@ -55,11 +74,11 @@ export class MapComponent implements OnInit {
         } else if (this.drawingMode === 'line') {
           this.lineService.addPoint(this.map, e.latlng);
         }
-      }, 250); // wait to ensure no dblclick is coming
+      }, 250); // Using click timeout to solve double click not responding issue in polygon/line mode.
     });
 
-    // Listen to double click and select its behavior based on drawing mode
-    this.map.on('dblclick', (e: L.LeafletMouseEvent) => {
+    // Define click behavior for polygon/line mode
+    this.map.on('dblclick', () => {
       if (this.drawingMode === 'polygon') {
         this.finishPolygon();
       } else if (this.drawingMode === 'line') {
@@ -67,12 +86,7 @@ export class MapComponent implements OnInit {
       }
     });
 
-    // Initialize features property.
-    this.featureListService.getFeatures().subscribe(features => {
-      this.features = features;
-    });
-
-    // Listeners for map move/zoom in order to clear feature selection from the list.
+    // Handle clearing selection on user move
     this.map.on('movestart', () => {
       if (!this.suppressNextClear) {
         this.userInteracted = true;
@@ -85,18 +99,16 @@ export class MapComponent implements OnInit {
         this.userInteracted = false;
       }
     });
-
   }
 
   setDrawingMode(mode: DrawingMode) {
+    // If already in this mode, toggle off and clean up
     if (this.drawingMode === mode) {
-      // If already in this mode, toggle off and clean up
       if (mode === 'polygon') {
         this.polygonService.cancelDrawing(this.map);
       } else if (mode === 'line') {
         this.lineService.cancelDrawing(this.map);
       }
-
       this.drawingMode = 'none';
       return;
     }
@@ -131,10 +143,9 @@ export class MapComponent implements OnInit {
     }
   }
 
-  // For highlight when clicked or hovered ---------------------
+  // For highlight when clicked or hovered
   selectFeature(feature: Feature) {
     this.selectedFeatureId = feature.id;
-
     this.suppressNextClear = true;
 
     const bounds = (feature.layer as any).getBounds?.();
@@ -144,23 +155,20 @@ export class MapComponent implements OnInit {
       this.map.setView((feature.layer as any).getLatLng(), 14);
     }
 
-    this.suppressNextClear = false;
-
+      this.suppressNextClear = false;
   }
 
   onHover(featureId: string) {
-
     const feature = this.features.find(f => f.id === featureId);
     if (!feature) return;
 
     this.hoveredFeatureId = featureId;
 
     if ('setStyle' in feature.layer) {
-      (feature.layer as L.Path).setStyle({ color: 'red' });
+      (feature.layer as L.Path).setStyle({ color: getHoverColor() });
     } else if ('setIcon' in feature.layer && feature.hoverIcon) {
       (feature.layer as L.Marker).setIcon(feature.hoverIcon);
     }
-
   }
 
   onLeave() {
@@ -168,7 +176,7 @@ export class MapComponent implements OnInit {
     if (!feature) return;
 
     if ('setStyle' in feature.layer) {
-      (feature.layer as L.Path).setStyle({ color: feature.originalColor});
+      (feature.layer as L.Path).setStyle({ color: feature.originalColor });
     } else if ('setIcon' in feature.layer && feature.defaultIcon) {
       (feature.layer as L.Marker).setIcon(feature.defaultIcon);
     }
@@ -180,5 +188,16 @@ export class MapComponent implements OnInit {
     this.selectedFeatureId = null;
   }
 
+  // Clear all the layers from the map
+  clearAllFeatures(): void {
+    const confirmed = window.confirm('Are you sure you want to delete all features?');
+    if (!confirmed) return;
 
+    this.features.forEach(f => {
+      this.map.removeLayer(f.layer);
+    });
+    this.featureListService.clearAll();
+    this.selectedFeatureId = null;
+    this.hoveredFeatureId = null;
+  }
 }

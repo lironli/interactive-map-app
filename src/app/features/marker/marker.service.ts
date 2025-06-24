@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Feature } from '../../shared/feature.model';
 import { FeatureListService } from '../../services/feature-list.service';
+import { StateService } from '../../services/state.service';
 
 
 @Injectable({
@@ -15,7 +16,10 @@ export class MarkerService {
   private defaultIcon: L.Icon;
   private hoverIcon: L.Icon;
 
-  constructor(private featureListService: FeatureListService) {
+  constructor(
+    private featureListService: FeatureListService,
+    private stateService: StateService
+  ) {
     // Initialize reusable icons
     this.defaultIcon = L.icon({
       iconUrl: 'assets/marker-green.png',
@@ -53,6 +57,8 @@ export class MarkerService {
 
     this.featureListService.addFeature(feature);
 
+    // Save updated state
+    this.stateService.saveFeatures(this.featureListService.snapshot());
   }
 
 }

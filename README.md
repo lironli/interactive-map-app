@@ -11,6 +11,8 @@ This application uses Leaflet to display an interactive map.
 - Add points/markers by clicking on the map. Popups showing marker coordinates.
 - Draw a polygon on the map by clicking multiple points and complete the shape with a double click or "Finish Polygon" button.
 - Draw a line string on the map by clicking multiple points and complete the shape with a double click or "Finish Line" button.
+- State is being saved in LocalStorage.
+- clear All button to delete all saved features. A confirmation window will pop before deletion.
 
 ---
 
@@ -24,7 +26,7 @@ npm install
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. 
+Run `ng serve` for a dev server. Navigate to http://localhost:4200/ . 
 
 The application will automatically reload if you change any of the source files.
 
@@ -33,10 +35,10 @@ The application will automatically reload if you change any of the source files.
 [//]: # ()
 [//]: # (Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.)
 
-[//]: # (## Running unit tests)
+## Running unit tests
 
-[//]: # ()
-[//]: # (Run `ng test` to execute the unit tests via [Karma]&#40;https://karma-runner.github.io&#41;.)
+
+Run `ng test ` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
 [//]: # (## Running end-to-end tests)
 
