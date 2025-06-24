@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Feature } from '../../shared/feature.model';
 import { FeatureListService } from '../../services/feature-list.service';
+import { StateService } from '../../services/state.service';
+import { getColorForType } from '../../shared/feature-colors';
 
 
 @Injectable({
@@ -14,7 +16,10 @@ export class PolygonService {
   private points: L.LatLng[] = [];
   private polygonLayer: L.Polygon | null = null;
 
-  constructor(private featureListService: FeatureListService) {}
+  constructor(
+    private featureListService: FeatureListService,
+    private stateService: StateService
+  ) {}
 
   startPolygon(map: L.Map): void{
     this.points = [];
@@ -30,12 +35,12 @@ export class PolygonService {
     if (this.polygonLayer) {
       map.removeLayer(this.polygonLayer);
     }
-    this.polygonLayer = L.polygon(this.points, { color: 'blue' }).addTo(map);
+    this.polygonLayer = L.polygon(this.points, { color: getColorForType('polygon') }).addTo(map);
   }
 
   finishPolygon(map: L.Map): void{
     if (this.points.length >= 3) {
-      this.polygonLayer = L.polygon(this.points, { color: 'blue' }).addTo(map);
+      this.polygonLayer = L.polygon(this.points, { color: getColorForType('polygon') }).addTo(map);
 
       // Adding this polygon to the feature list
       const id = uuidv4(); // Unique ID for this marker
@@ -47,6 +52,8 @@ export class PolygonService {
 
       this.featureListService.addFeature(feature);
 
+      // Save updated state
+      this.stateService.saveFeatures(this.featureListService.snapshot());
     }
     this.points = [];
     this.polygonLayer = null;

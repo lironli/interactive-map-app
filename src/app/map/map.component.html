@@ -6,6 +6,7 @@
   <button *ngIf="drawingMode === 'polygon'" (click)="finishPolygon()">Finish Polygon</button>
   <button (click)="setDrawingMode('line')" [ngClass]="{ 'active': drawingMode === 'line' }">Draw Line String</button>
   <button *ngIf="drawingMode === 'line'" (click)="finishLine()">Finish Line</button>
+  <button *ngIf="features.length > 0" (click)="clearAllFeatures()">Clear All</button>
 </div>
 
 <div class="feature-list">
