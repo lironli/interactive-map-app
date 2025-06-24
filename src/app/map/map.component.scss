@@ -44,21 +44,35 @@ button.active {
 
 .feature-list {
   position: absolute;
-  bottom: 0;
+  bottom: 7px;
   width: 96%;
   background: rgba(255, 255, 255, 0.9);
   overflow-x: auto;
+  overflow-y: scroll;
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2);
   z-index: 1000;
 
   max-height: 150px;
-  overflow-y: auto;
   border-top: 2px solid #ccc;
   padding: 0.5rem 1rem;
   display: flex;
   gap: 0.5rem;
   flex-wrap: nowrap;
 
+}
+
+.feature-list::-webkit-scrollbar {
+  height: 10px;
+  width: 8px;
+}
+
+.feature-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.feature-list::-webkit-scrollbar-thumb {
+  background-color: #999;
+  border-radius: 4px;
 }
 
 .feature-item {
